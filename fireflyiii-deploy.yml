@@ -1,0 +1,128 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: fireflyiii
+  labels:
+    app: fireflyiii
+    part-of: fireflyiii
+  annotations:
+    keel.sh/policy: force
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@hourly"
+    keel.sh/match-tag: true
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fireflyiii
+      part-of: fireflyiii
+  template:
+    metadata:
+      labels:
+        app: fireflyiii
+        part-of: fireflyiii
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: disktype
+                operator: In
+                values:
+                - ssd   
+      serviceAccountName: fireflyiii
+      containers:
+      - name: fireflyiii
+        image: fireflyiii/core:version-5.6.10
+        ports:
+        - name: fireflyiii
+          containerPort: 8080
+        env:
+        - name: APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: fireflyiii
+              key: APP_KEY
+        - name: STATIC_CRON_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: fireflyiii
+              key: STATIC_CRON_TOKEN
+        - name: DB_CONNECTION
+          value: "mysql"
+        - name: DB_HOST
+          value: "mariadb"
+        - name: DB_PORT
+          value: "3306"
+        - name: DB_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: fireflyiii
+              key: DB_DATABASE
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: fireflyiii
+              key: DB_USERNAME
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: fireflyiii
+              key: DB_PASSWORD
+        - name: MAIL_MAILER
+          value: "smtp"
+        - name: MAIL_HOST
+          valueFrom:
+            secretKeyRef:
+              name: fireflyiii
+              key: MAIL_HOST
+        - name: MAIL_PORT
+          value: "587"
+        - name: MAIL_FROM
+          valueFrom:
+            secretKeyRef:
+              name: fireflyiii
+              key: MAIL_FROM
+        - name: MAIL_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: fireflyiii 
+              key: MAIL_USERNAME
+        - name: MAIL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: fireflyiii
+              key: MAIL_PASSWORD
+        - name: MAIL_ENCRYPTION
+          value: "tls"
+        - name: AUTHENTICATION_GUARD
+          value: "remote_user_guard"
+        - name: AUTHENTICATION_GUARD_HEADER
+          value: "HTTP_X_AUTHENTIK_USERNAME"
+        - name: AUTHENTICATION_GUARD_EMAIL
+          value: "HTTP_X_AUTHENTIK_EMAIL"
+        - name: TRUSTED_PROXIES
+          value: "**"
+        volumeMounts:
+        - name: upload
+          mountPath: /var/www/html/storage/upload
+        - name: fireflyiii-secrets
+          mountPath: "/mnt/vault"
+          readOnly: true
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            memory: 256Mi
+      volumes:
+      - name: upload
+        persistentVolumeClaim:
+          claimName: upload
+      - name: fireflyiii-secrets
+        csi:
+          driver: "secrets-store.csi.k8s.io"
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "fireflyiii"

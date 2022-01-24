@@ -1,0 +1,65 @@
+apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+kind: SecretProviderClass
+metadata:
+  name: fireflyiii
+spec:
+  provider: vault
+  secretObjects:
+  - secretName: fireflyiii
+    type: Opaque
+    data: 
+    - objectName: APP_KEY
+      key: APP_KEY
+    - objectName: DB_DATABASE
+      key: DB_DATABASE
+    - objectName: DB_PASSWORD
+      key: DB_PASSWORD
+    - objectName: DB_USERNAME
+      key: DB_USERNAME
+    - objectName: MAIL_HOST
+      key: MAIL_HOST
+    - objectName: MAIL_FROM
+      key: MAIL_FROM
+    - objectName: MAIL_PASSWORD
+      key: MAIL_PASSWORD
+    - objectName: MAIL_USERNAME
+      key: MAIL_USERNAME
+    - objectName: STATIC_CRON_TOKEN
+      key: STATIC_CRON_TOKEN
+    - objectName: ACCESS_TOKEN
+      key: ACCESS_TOKEN
+  parameters:
+    vaultAddress: 'http://vault.vault:8200'
+    vaultKubernetesMountPath: 'k8s-vault-csi'
+    roleName: fireflyiii
+    objects: |
+      - objectName: "APP_KEY"
+        secretPath: "apps-kv/data/fireflyiii/config"
+        secretKey: "APP_KEY"
+      - objectName: "DB_DATABASE"
+        secretPath: "apps-kv/data/fireflyiii/database"
+        secretKey: "DB_DATABASE"
+      - objectName: "DB_PASSWORD"
+        secretPath: "apps-kv/data/fireflyiii/database"
+        secretKey: "DB_PASSWORD"
+      - objectName: "DB_USERNAME"
+        secretPath: "apps-kv/data/fireflyiii/database"
+        secretKey: "DB_USERNAME"
+      - objectName: "MAIL_HOST"
+        secretPath: "apps-kv/data/fireflyiii/smtp"
+        secretKey: "MAIL_HOST"
+      - objectName: "MAIL_FROM"
+        secretPath: "apps-kv/data/fireflyiii/smtp"
+        secretKey: "MAIL_FROM"
+      - objectName: "MAIL_PASSWORD"
+        secretPath: "apps-kv/data/fireflyiii/smtp"
+        secretKey: "MAIL_PASSWORD"
+      - objectName: "MAIL_USERNAME"
+        secretPath: "apps-kv/data/fireflyiii/smtp"
+        secretKey: "MAIL_USERNAME"
+      - objectName: "STATIC_CRON_TOKEN"
+        secretPath: "apps-kv/data/fireflyiii/config"
+        secretKey: "STATIC_CRON_TOKEN"
+      - objectName: "ACCESS_TOKEN"
+        secretPath: "apps-kv/data/fireflyiii/config"
+        secretKey: "ACCESS_TOKEN"

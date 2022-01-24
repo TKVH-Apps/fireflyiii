@@ -1,0 +1,66 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: fireflyiii-importer
+  labels:
+    app: fireflyiii-importer
+    part-of: fireflyiii
+  annotations:
+    keel.sh/policy: force
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@hourly"
+    keel.sh/match-tag: true
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fireflyiii-importer
+      part-of: fireflyiii
+  template:
+    metadata:
+      labels:
+        app: fireflyiii-importer
+        part-of: fireflyiii
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: disktype
+                operator: In
+                values:
+                - ssd   
+      serviceAccountName: fireflyiii
+      containers:
+      - name: fireflyiii-importer
+        image: fireflyiii/data-importer:latest
+        env:
+        - name: TRUSTED_PROXIES
+          value: "**"
+        - name: FIREFLY_III_CLIENT_ID
+          value: "5"
+        - name: FIREFLY_III_URL
+          value: "http://fireflyiii:8080"
+        - name: VANITY_URL
+          value: "https://finance.<path:apps-kv/data/general#internalDN>"
+        ports:
+        - name: fireflyiiiimp
+          containerPort: 8080
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+             memory: 256Mi
+        volumeMounts:
+        - name: fireflyiii-secrets
+          mountPath: "/mnt/vault"
+          readOnly: true
+      volumes:
+      - name: fireflyiii-secrets
+        csi:
+          driver: "secrets-store.csi.k8s.io"
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "fireflyiii"

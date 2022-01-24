@@ -1,0 +1,93 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: mariadb
+  labels:
+    app: mariadb
+    part-of: fireflyiii
+  annotations:
+    keel.sh/policy: force
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@hourly"
+    keel.sh/match-tag: true
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+      part-of: fireflyiii
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mariadb
+        part-of: fireflyiii
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: disktype
+                operator: In
+                values:
+                - ssd
+      serviceAccountName: fireflyiii
+      containers:
+      - name: mariadb
+        image: ghcr.io/linuxserver/mariadb:latest
+        ports:
+        - name: mariadb
+          containerPort: 3306
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "Europe/Paris"
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: fireflyiii
+              key: DB_PASSWORD
+        - name: MYSQL_LOG_CONSOLE
+          value: "true"
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: fireflyiii
+              key: DB_USERNAME
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: fireflyiii
+              key: DB_DATABASE
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: fireflyiii
+              key: DB_PASSWORD
+        volumeMounts:
+        - name: fireflyiii-mariadb
+          mountPath: /config
+        - name: fireflyiii-secrets
+          mountPath: "/mnt/vault"
+          readOnly: true
+        resources:
+          limits:
+            memory: 256Mi
+          requests:
+            memory: 128Mi
+      volumes:
+      - name: fireflyiii-mariadb
+        persistentVolumeClaim:
+          claimName: fireflyiii-mariadb
+      - name: fireflyiii-secrets
+        csi:
+          driver: "secrets-store.csi.k8s.io"
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "fireflyiii"
