@@ -45,6 +45,8 @@ spec:
           value: "http://fireflyiii:8080"
         - name: VANITY_URL
           value: "https://finance.<path:apps-kv/data/general#internalDN>"
+        - name: JSON_CONFIGURATION_DIR
+          value: "/configurations"
         ports:
         - name: fireflyiiiimp
           containerPort: 8080
@@ -54,10 +56,15 @@ spec:
           requests:
              memory: 256Mi
         volumeMounts:
+        - name: configurations
+          mountPath: /configurations
         - name: fireflyiii-secrets
           mountPath: "/mnt/vault"
           readOnly: true
       volumes:
+      - name: configurations
+        persistentVolumeClaim:
+          claimName: configurations
       - name: fireflyiii-secrets
         csi:
           driver: "secrets-store.csi.k8s.io"
