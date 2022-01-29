@@ -108,9 +108,9 @@ spec:
           readOnly: true
         resources:
           limits:
-            memory: 512Mi
+            memory: 150Mi
           requests:
-            memory: 256Mi
+            memory: 100Mi
       volumes:
       - name: upload
         persistentVolumeClaim:
