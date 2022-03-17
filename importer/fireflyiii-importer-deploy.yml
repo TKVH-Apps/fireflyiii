@@ -35,7 +35,7 @@ spec:
       serviceAccountName: fireflyiii
       containers:
       - name: fireflyiii-importer
-        image: fireflyiii/data-importer:latest
+        image: fireflyiii/data-importer:version-0.9.0
         env:
         - name: TRUSTED_PROXIES
           value: "**"
