@@ -11,5 +11,5 @@ resources:
   - fireflyiii-ns.yml
   - mariadb-deploy.yml
   - mariadb-svc.yml
-  - fireflyiii-cronjob.yml
+#  - fireflyiii-cronjob.yml
   - importer/
