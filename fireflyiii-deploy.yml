@@ -30,7 +30,7 @@ spec:
       serviceAccountName: fireflyiii
       containers:
       - name: fireflyiii
-        image: fireflyiii/core:version-5.6.16
+        image: fireflyiii/core:version-5.7.9
         ports:
         - name: fireflyiii
           containerPort: 8080
